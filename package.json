@@ -1,0 +1,22 @@
+{
+  "name": "loadbalancer",
+  "version": "0.0.1",
+  "description": "load balancer app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Artur Gawron",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^16.0.3",
+    "eslint": "^8.3.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3"
+  },
+  "dependencies": {
+    "jquery": "^3.6.0",
+    "typeface-roboto": "^1.1.13"
+  }
+}
