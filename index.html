@@ -6,8 +6,16 @@
   </head>
   <body>
     <div id="screen" class="content">
-      <div id="appInitContent">init</div>
-      <div id="appRunningContent" style="display: none;">running</div>
+      <div id="appInitContent" class="content">init</div>
+      <div id="appRunningContent" class="content" style="display: none;">
+        <div>
+          <table id="threadTable">
+            <tr class="headers"></tr>
+            <tr class="progress"></tr>
+            <tr class="stats"></tr>
+          </table>
+        </div>
+      </div>
     </div>
     <div id="panel" class="content">
         <button id="mainBtn" class="start control-btn">click</button>

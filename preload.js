@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld(
         stop: (data) => ipcRenderer.send('stop', data),
         getAppState: () => ipcRenderer.send('getAppState'),
         onAppState: (func) => ipcRenderer.on('appState', func),
+        onThreadState: (func) => ipcRenderer.on('threadState', func),
     },
 );

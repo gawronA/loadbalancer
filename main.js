@@ -12,9 +12,31 @@ const createWindow = () => {
     });
     win.loadFile('index.html');
 };
+
 const updateAppState = (state) => {
     appState = state;
     win.webContents.send('appState', appState);
+};
+
+const updateThreadState = () => {
+    win.webContents.send('threadState', [
+        {
+            id: 1,
+            processedSize: 54324,
+            fileSize: 10300200,
+            fileSizeUnit: 'Byte',
+            processingTime: 0.423,
+            processingTimeUnit: 's',
+        },
+        {
+            id: 1,
+            processedSize: 432,
+            fileSize: 6543,
+            fileSizeUnit: 'MB',
+            processingTime: 3,
+            processingTimeUnit: 's',
+        },
+    ]);
 };
 
 ipcMain.on('getAppState', () => {
@@ -24,6 +46,7 @@ ipcMain.on('getAppState', () => {
 ipcMain.on('start', (event, data) => {
     console.log(`App has started ${data}`);
     updateAppState('running');
+    updateThreadState();
 });
 
 ipcMain.on('stop', (event, data) => {
@@ -33,6 +56,7 @@ ipcMain.on('stop', (event, data) => {
 
 const run = () => {
     createWindow();
+    updateThreadState();
 };
 
 app.whenReady().then(run);
