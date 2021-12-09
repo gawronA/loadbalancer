@@ -1,45 +1,89 @@
-let mainAppState;
+// let mainAppState;
+// let mainThreads;
+// let mainClients;
 
 $('#mainBtn').on('click', () => {
-    if (mainAppState === 'init') {
-        window.api.start('hello');
-    } else if (mainAppState === 'running') {
-        window.api.stop('bye');
-    }
-    // window.api.start('hello');
-    // $('#appInitContent').hide();
-    // $('#appRunningContent').show();
-    // $('#mainBtn.start').addClass('stop');
-    // $('#mainBtn.start').removeClass('start');
+    window.api.mainToggle();
 });
 
-window.api.onAppState((event, state) => {
-    mainAppState = state;
-    if (mainAppState === 'init') {
+const convertFileSizeToStr = (sizeInBytes) => {
+    if (sizeInBytes / 1e9 > 1) {
+        return `${(sizeInBytes / 1e9).toFixed(1)} GB`;
+    }
+    if (sizeInBytes / 1e6 > 1) {
+        return `${(sizeInBytes / 1e6).toFixed(1)} MB`;
+    }
+    if (sizeInBytes / 1e3 > 1) {
+        return `${(sizeInBytes / 1e3).toFixed(1)} kB`;
+    }
+
+    return `${(sizeInBytes / 1e0).toFixed(1)} B`;
+};
+
+const convertTimeToStr = (timeInMs) => {
+    if (timeInMs / 1000 / 60 > 1) {
+        return `${parseInt(timeInMs / 1000 / 60, 10)}m${parseInt(timeInMs / 1000, 10)}s`;
+    }
+
+    return `${parseInt(timeInMs / 1000, 10)}s`;
+};
+
+const updateAppState = (state) => {
+    if (state === 'init') {
         $('#appInitContent').show();
         $('#appRunningContent').hide();
         $('#mainBtn').addClass('start');
         $('#mainBtn').removeClass('stop');
-    } else if (mainAppState === 'running') {
+        $('#mainBtn').text('Start');
+    } else if (state === 'running') {
         $('#appInitContent').hide();
         $('#appRunningContent').show();
         $('#mainBtn').addClass('stop');
         $('#mainBtn').removeClass('start');
+        $('#mainBtn').text('Stop');
     }
-});
+};
 
-window.api.onThreadState((event, data) => {
-    const table = $('#threadTable');
-    $('tr.headers', table).empty();
-    $('tr.progress', table).empty();
-    $('tr.stats', table).empty();
+const updateThreads = (threads) => {
+    const phlr = $('.thread-table-placeholder');
+    phlr.empty();
 
-    data.forEach((thread) => {
-        $('tr.headers', table).append(`<th>Thread_${thread.id}</th>`);
-        $('tr.progress', table).append(`<td>${thread.processedSize}/${thread.fileSize} ${thread.fileSizeUnit}</td>`);
-        $('tr.stats', table).append(`<td>${((thread.processedSize / thread.fileSize) * 100).toFixed(2)}% in ${thread.processingTime}${thread.processingTimeUnit}</td>`);
+    threads.forEach((thread) => {
+        phlr.append(`
+            <table class="thread-table">
+                <tr class="${thread.fileSize === 0 ? 'idle' : 'busy'}"><th>Thread_${thread.id}</th></tr>
+                <tr><td>${convertFileSizeToStr(thread.processedSize)}/${convertFileSizeToStr(thread.fileSize)}</td></tr>
+                <tr><td>${((thread.processedSize / thread.fileSize) * 100).toFixed(2)}% in ${convertTimeToStr(thread.processingTime)}</td></tr>
+            </table>
+        `);
     });
-});
-$(document).ready(() => {
-    window.api.getAppState();
+};
+
+const updateClients = (clients) => {
+    const table = $('.client-table tbody');
+    $('tr', table).slice(1).remove();
+
+    clients.forEach((client) => {
+        let filesString = '';
+        client.files.forEach((file) => {
+            filesString += `${convertFileSizeToStr(file.size)} (${file.type}), `;
+        });
+        filesString = filesString.slice(0, -1);
+        table.append(`
+            <tr>
+                <td>${client.id}</td>
+                <td>${client.fileCount}</td>
+                <td class="file-contents">${filesString}</td>
+                <td>${convertTimeToStr(client.waitTime)}</td>
+                <td>${client.weight}</td>
+            </tr>
+        `);
+    });
+};
+
+window.api.onUpdate((event, data) => {
+    const { mainAppState, mainThreads, mainClients } = data;
+    updateAppState(mainAppState);
+    updateThreads(mainThreads);
+    updateClients(mainClients);
 });

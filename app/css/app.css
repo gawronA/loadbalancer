@@ -17,16 +17,18 @@ body {
 .content {
     display: flex;
     flex-direction: column;
+    margin: 30px;
 }
 
 #screen.content {
-    flex: 3;
+    flex: 6;
 }
 
 #panel.content {
     flex: 1;
     justify-content: flex-end;
     align-items: center;
+    border-left: 1px solid slategray;
 }
 
 .control-btn {
@@ -39,23 +41,61 @@ body {
     font-size: 30px;
     margin: 30px;
 }
-
 .start.control-btn {
     background-color: rgb(6, 135, 6);
     color: #6fd500;
 }
-
 .start.control-btn:active {
     background-color: rgb(26, 155, 26);
 
 }
-
 .stop.control-btn {
     background-color: rgb(135, 15, 6);
     color: #e13a3a;
 }
-
 .stop.control-btn:active {
     background-color: rgb(155, 26, 26);
 
+}
+
+.thread-table-placeholder, .client-table-placeholder {
+    margin-bottom: 50px;
+}
+
+table {
+    border-collapse: collapse;
+}
+tr {
+    border: 1px solid slategray;
+}
+
+.thread-table {
+    display: inline-table;
+    width: 150px;
+    height: 100px;
+    text-align: center;
+}
+.thread-table tr td {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: small;
+}
+.thread-table tr.idle {
+    background-color: darkgreen;
+}
+.thread-table tr.busy {
+    background-color: darkred;
+}
+
+.client-table {
+    width: 100%;
+    text-align: center;
+}
+.client-table tr td {
+    font-size: small;
+}
+.client-table tr td.file-contents {
+    text-align: left;
 }

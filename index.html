@@ -8,11 +8,23 @@
     <div id="screen" class="content">
       <div id="appInitContent" class="content">init</div>
       <div id="appRunningContent" class="content" style="display: none;">
-        <div>
-          <table id="threadTable">
-            <tr class="headers"></tr>
-            <tr class="progress"></tr>
-            <tr class="stats"></tr>
+        <div class="thread-table-placeholder"></div>
+        <div class="client-table-placeholder">
+          <table class="client-table">
+            <tr>
+              <th style="width: 40px;">Id</th>
+              <th style="width: 60px;">No. files</th>
+              <th>File contents</th>
+              <th style="width: 100px;">Time</th>
+              <th style="width: 100px;">Weight</th>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td>12</td>
+              <td class="file-contents">100Mb (mp4), 1GB (avi), 12314523455251412345 263542143245625longlong123542 13241556543654765767568 long tp tp tp tp tptp 425243552435 42355</td>
+              <td>29s</td>
+              <td>34234</td>
+            </tr>
           </table>
         </div>
       </div>
