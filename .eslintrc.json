@@ -18,6 +18,7 @@
         "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
         "no-unused-vars": "warn",
         "no-trailing-spaces": "warn",
-        "max-len": ["warn", 150]
+        "max-len": ["warn", 150],
+        "radix": 0
     }
 }

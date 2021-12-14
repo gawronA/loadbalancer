@@ -3,7 +3,15 @@
 // let mainClients;
 
 $('#mainBtn').on('click', () => {
-    window.api.mainToggle();
+    const params = {
+        threadCount: parseInt($('#threadCount').val()),
+        tickTime: parseInt($('#tickTime').val()),
+        uploadSpeed: parseInt($('#uploadSpeed').val()),
+        minClientTta: parseInt($('#minClientTta').val()),
+        maxClientTta: parseInt($('#maxClientTta').val()),
+        maxClients: parseInt($('#maxClients').val()),
+    };
+    window.api.mainToggle(params);
 });
 
 const convertFileSizeToStr = (sizeInBytes) => {
@@ -44,6 +52,15 @@ const updateAppState = (state) => {
     }
 };
 
+const updateParams = (params) => {
+    $('#threadCount').val(params.threadCount);
+    $('#tickTime').val(params.tickTime);
+    $('#uploadSpeed').val(params.uploadSpeed);
+    $('#minClientTta').val(params.minClientTta);
+    $('#maxClientTta').val(params.maxClientTta);
+    $('#maxClients').val(params.maxClients);
+};
+
 const updateThreads = (threads) => {
     const phlr = $('.thread-table-placeholder');
     phlr.empty();
@@ -82,8 +99,15 @@ const updateClients = (clients) => {
 };
 
 window.api.onUpdate((event, data) => {
-    const { mainAppState, mainThreads, mainClients } = data;
+    const {
+        mainAppState, mainParams, mainThreads, mainClients,
+    } = data;
     updateAppState(mainAppState);
+    updateParams(mainParams);
     updateThreads(mainThreads);
     updateClients(mainClients);
+});
+
+$(document).ready(() => {
+    window.api.update();
 });

@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld(
     {
         mainToggle: (data) => ipcRenderer.send('toggle', data),
         onUpdate: (func) => ipcRenderer.on('update', func),
+        update: () => ipcRenderer.send('update'),
     },
 );
