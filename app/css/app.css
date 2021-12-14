@@ -99,3 +99,18 @@ tr {
 .client-table tr td.file-contents {
     text-align: left;
 }
+
+.init-table tr td {
+    padding: 4px;
+    width: 200px;
+}
+.init-table tr td input {
+    background-color: #1e252c;
+    border: 0;
+    border-bottom: 1px solid #708090;
+    color: #c0c9d3;
+    width: 100%;
+}
+.init-table tr td input:focus {
+    outline: none;
+}

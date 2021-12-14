@@ -3,12 +3,46 @@ const path = require('path');
 
 let win;
 let appState = 'init';
+let params = {
+    threadCount: 5,
+    tickTime: 40,
+    uploadSpeed: 2000000,
+    minClientTta: 200,
+    maxClientTta: 3000,
+    maxClients: 50,
+};
 let threads;
 let clients;
 
-let processingSpeed;
 let tickIntervalHandle;
 let lastTickTime;
+let timeToNextClient;
+
+class ClientGenerator {
+    clientCounter = 0;
+
+    constructor(config) {
+        this.config = config;
+    }
+
+    create() {
+        const fCount = Math.floor(Math.random() * (5 - 1 + 1)) + 1;
+        const fs = new Array(fCount);
+        for (let i = 0; i < fCount; i += 1) {
+            fs[i] = { type: '', size: Math.floor(Math.random() * ((512 * 1e6) - 1e3 + 1)) + 1e3 };
+        }
+        return {
+            // eslint-disable-next-line no-plusplus
+            id: this.clientCounter++,
+            fileCount: fCount,
+            files: fs,
+            waitTime: 0,
+            weight: 0,
+        };
+    }
+}
+
+const clientGenerator = new ClientGenerator(0);
 
 const createWindow = () => {
     win = new BrowserWindow({
@@ -32,7 +66,8 @@ const initThreads = (count) => {
 };
 
 const initClients = () => {
-    clients = [{
+    clients = [];
+    clients.push({
         id: 0,
         fileCount: 5,
         files: [
@@ -58,21 +93,30 @@ const initClients = () => {
             }],
         waitTime: 1474765,
         weight: 12354,
-    }];
+    });
 };
 
 const updateRenderer = () => {
     win.webContents.send('update', {
         mainAppState: appState,
+        mainParams: params,
         mainThreads: threads,
         mainClients: clients,
     });
 };
 
+const randomUniform = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
 const tick = () => {
     const now = Date.now();
     const deltaTime = now - lastTickTime;
     lastTickTime = now;
+
+    timeToNextClient -= deltaTime;
+    if (timeToNextClient <= 0) {
+        clients.push(clientGenerator.create());
+        timeToNextClient = randomUniform(params.minClientTta, params.maxClientTta);
+    }
 
     /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["thread"] }] */
     threads.forEach((thread) => {
@@ -83,7 +127,7 @@ const tick = () => {
                 clients.shift();
             }
         } else if (thread.fileSize !== 0) {
-            thread.processedSize += processingSpeed * (deltaTime / 1000);
+            thread.processedSize += params.uploadSpeed * (deltaTime / 1000);
             thread.processingTime += deltaTime / 1000;
             if (thread.processedSize >= thread.fileSize) {
                 thread.fileSize = 0;
@@ -96,12 +140,11 @@ const tick = () => {
     updateRenderer();
 };
 
-const startSimulation = (period, speed) => {
-    processingSpeed = speed;
+const startSimulation = () => {
     lastTickTime = Date.now();
-    tickIntervalHandle = setInterval(tick, period);
+    timeToNextClient = randomUniform(params.minClientTta, params.maxClientTta);
+    tickIntervalHandle = setInterval(tick, params.period);
 };
-
 const stopSimulation = () => {
     clearInterval(tickIntervalHandle);
 };
@@ -109,9 +152,10 @@ const stopSimulation = () => {
 ipcMain.on('toggle', (event, data) => {
     if (appState === 'init') {
         appState = 'running';
-        initThreads(5);
+        params = data;
+        initThreads(params.threadCount);
         initClients();
-        startSimulation(40, 100000);
+        startSimulation();
         updateRenderer();
     } else if (appState === 'running') {
         appState = 'init';
@@ -122,6 +166,9 @@ ipcMain.on('toggle', (event, data) => {
 
 const run = () => {
     createWindow();
+    win.webContents.on('dom-ready', () => {
+        updateRenderer();
+    });
 };
 
 app.whenReady().then(run);

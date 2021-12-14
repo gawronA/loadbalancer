@@ -44,6 +44,15 @@ const updateAppState = (state) => {
     }
 };
 
+const updateParams = (params) => {
+    $('#threadCount').val = params.threadCount;
+    $('#tickTime').val = params.tickTime;
+    $('#uploadSpeed').val = params.uploadSpeed;
+    $('#minClientTta').val = params.minClientTta;
+    $('#maxClientTta').val = params.maxClientTta;
+    $('#maxClients').val = params.maxClients;
+};
+
 const updateThreads = (threads) => {
     const phlr = $('.thread-table-placeholder');
     phlr.empty();
@@ -82,8 +91,11 @@ const updateClients = (clients) => {
 };
 
 window.api.onUpdate((event, data) => {
-    const { mainAppState, mainThreads, mainClients } = data;
+    const {
+        mainAppState, mainParams, mainThreads, mainClients,
+    } = data;
     updateAppState(mainAppState);
+    updateParams(mainParams);
     updateThreads(mainThreads);
     updateClients(mainClients);
 });

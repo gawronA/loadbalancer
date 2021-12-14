@@ -6,7 +6,86 @@
   </head>
   <body>
     <div id="screen" class="content">
-      <div id="appInitContent" class="content">init</div>
+      <div id="appInitContent" class="content">
+        <div>
+
+          <h3>General</h3>
+          <table class="init-table">
+            <tr>
+              <td>Number of threads</td>
+              <td><input id="threadCount"/></td>
+            </tr>
+            <tr>
+              <td>Tick time [ms]</td>
+              <td><input id="tickTime"/></td>
+            </tr>
+            <tr>
+              <td>Upload speed [B/s]</td>
+              <td><input id="uploadSpeed"/></td>
+            </tr>
+            <tr>
+              <td>Min client arrival time</td>
+              <td><input id="minClientTta"/></td>
+            </tr>
+            <tr>
+              <td>Max client arrival time</td>
+              <td><input id="maxClientTta"/></td>
+            </tr>
+            <tr>
+              <td>Max pending clients</td>
+              <td><input id="maxClients"/></td>
+            </tr>
+          </table>
+
+          <h3>'avi' file</h3>
+          <table class="init-table">
+            <tr>
+              <td>Probability</td>
+              <td><input id="avip"/></td>
+            </tr>
+            <tr>
+              <td>Mean value</td>
+              <td><input id="aviu"/></td>
+            </tr>
+            <tr>
+              <td>Variance</td>
+              <td><input id="aviv"/></td>
+            </tr>
+          </table>
+
+          <h3>'mp3' file</h3>
+          <table class="init-table">
+            <tr>
+              <td>Probability</td>
+              <td><input id="mp3p"/></td>
+            </tr>
+            <tr>
+              <td>Mean value</td>
+              <td><input id="mp3u"/></td>
+            </tr>
+            <tr>
+              <td>Variance</td>
+              <td><input id="mp3v"/></td>
+            </tr>
+          </table>
+
+          <h3>'doc' file</h3>
+          <table class="init-table">
+            <tr>
+              <td>Probability</td>
+              <td><input id="docp"/></td>
+            </tr>
+            <tr>
+              <td>Mean value</td>
+              <td><input id="docu"/></td>
+            </tr>
+            <tr>
+              <td>Variance</td>
+              <td><input id="docv"/></td>
+            </tr>
+          </table>
+        </div>
+      </div>
       <div id="appRunningContent" class="content" style="display: none;">
         <div class="thread-table-placeholder"></div>
         <div class="client-table-placeholder">
