@@ -31,17 +31,42 @@ body {
     border-left: 1px solid slategray;
 }
 
+#panel .client-control
+{
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+#panel .client-control button
+{
+    margin: 5px;
+}
+
+#panel .simu-control
+{
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+#panel .simu-control button
+{
+    margin: 5px;
+}
+
 .control-btn {
-    width: 150px;
-    height: 75px;
+    
     border: 0px;
     border-radius: 20px;
     font-family: inherit;
     font-weight: bold;
     font-size: 30px;
-    margin: 30px;
 }
 .start.control-btn {
+    width: 150px;
+    height: 75px;
+    margin: 30px;
     background-color: rgb(6, 135, 6);
     color: #6fd500;
 }

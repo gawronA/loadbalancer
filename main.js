@@ -1,4 +1,4 @@
-/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["thread", "client", "a", "b"] }] */
+/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["thread", "client", "a", "b", "deltaTime"] }] */
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -34,10 +34,48 @@ class ClientGenerator {
             fs[i] = { type: '', size: Math.floor(Math.random() * ((1e3) - 1 + 1)) + 1 };
         }
         return {
-            // eslint-disable-next-line no-plusplus
             id: this.clientCounter++,
             fileCount: fCount,
             files: fs,
+            waitTime: 0,
+            weight: 0,
+        };
+    }
+
+    createSmallFile() {
+        return {
+            id: this.clientCounter++,
+            fileCount: 1,
+            files: [{
+                type: '',
+                size: Math.floor(Math.random() * ((200) - 1 + 1)) + 1,
+            }],
+            waitTime: 0,
+            weight: 0,
+        };
+    }
+
+    createMediumFile() {
+        return {
+            id: this.clientCounter++,
+            fileCount: 1,
+            files: [{
+                type: '',
+                size: Math.floor(Math.random() * ((750) - 200 + 1)) + 200,
+            }],
+            waitTime: 0,
+            weight: 0,
+        };
+    }
+
+    createLargeFile() {
+        return {
+            id: this.clientCounter++,
+            fileCount: 1,
+            files: [{
+                type: '',
+                size: Math.floor(Math.random() * ((1000) - 750 + 1)) + 750,
+            }],
             waitTime: 0,
             weight: 0,
         };
@@ -107,50 +145,73 @@ const updateRenderer = () => {
     });
 };
 
-const calculateWeight = (fileSize, time, clientCount) => (1 / clientCount) * time ** 2 + (clientCount / fileSize);
+// eslint-disable-next-line arrow-body-style
+// const calculateWeight = (maxFileSize, minFileSize, fileSize, maxWaitTime, minWaitTime, time, clientCount) => {
+//     // eslint-disable-next-line max-len
+//     return (((1 / clientCount) * (time - minWaitTime)) / ((maxWaitTime - minWaitTime) ** 2)) + (clientCount / (fileSize - minFileSize) / (maxFileSize - minFileSize));
+// };
+
+// eslint-disable-next-line arrow-body-style
+const calculateWeight = (maxFileSize, minFileSize, fileSize, maxWaitTime, minWaitTime, time, clientCount) => {
+    // eslint-disable-next-line max-len
+    const normSize = (fileSize - minFileSize) / (maxFileSize - minFileSize);
+    const normTime = (time - minWaitTime) / (maxWaitTime - minWaitTime);
+    return -(normSize - 1) + normTime;
+};
 
 const sortFiles = () => {
     // create a file pool with clients indexes and wait time
     // sort files in a pool
     // reassign files to clients and set weight to the highest calculated
     // const filePool = [];
+    let maxFileSize = -1;
+    let minFileSize = -1;
+    let maxWaitTime = -1;
+    let minWaitTime = -1;
     const filePool = [];
     clients.forEach((client) => {
+        if (client.waitTime > maxWaitTime)maxWaitTime = client.waitTime;
+        if (client.waitTime < minWaitTime)minWaitTime = client.waitTime;
         client.files.forEach((file) => {
+            if (file.size > maxFileSize) maxFileSize = file.size;
+            if (file.size < minFileSize)minFileSize = file.size;
             filePool.push({
                 clientId: client.id,
                 file,
-                waitTime: client.waitTime / 1000,
+                waitTime: client.waitTime,
                 weight: 0,
             });
         });
     });
 
     filePool.sort((a, b) => {
-        a.weight = calculateWeight(a.file.size, a.waitTime, clients.length);
-        b.weight = calculateWeight(b.file.size, b.waitTime, clients.length);
+        a.weight = calculateWeight(maxFileSize, minFileSize, a.file.size, maxWaitTime, minWaitTime, a.waitTime, clients.length);
+        b.weight = calculateWeight(maxFileSize, minFileSize, b.file.size, maxWaitTime, minWaitTime, b.waitTime, clients.length);
         return b.weight - a.weight;
     });
 
-    const sortedClients = Array(clients.lenght);
+    // const sortedClients = Array(clients.lenght);
+    const sortedClients = [];
     const filePoolLength = filePool.length;
     for (let i = 0; i < filePoolLength; i += 1) {
         // get the first file
         const file = filePool.shift();
 
         // if there is no client with index from file - create it
-        if (typeof sortedClients[file.clientId] === 'undefined') {
+        if (typeof sortedClients.find((e) => (typeof (e) === 'undefined' ? false : e.id === file.clientId)) === 'undefined') {
             // does not exist
-            sortedClients[file.clientId] = {
-                id: clients[file.clientId].id,
-                fileCount: clients[file.clientId].fileCount,
+            // find client in clients
+            const client = clients.find((e) => e.id === file.clientId);
+            sortedClients.push({
+                id: client.id,
+                fileCount: client.fileCount,
                 files: [file.file],
-                waitTime: clients[file.clientId].waitTime,
+                waitTime: client.waitTime,
                 weight: file.weight,
-            };
+            });
         } else {
             // does exist - just append the file
-            sortedClients[file.clientId].files.push(file.file);
+            sortedClients.find((e) => e.id === file.clientId).files.push(file.file);
         }
     }
 
@@ -160,13 +221,14 @@ const sortFiles = () => {
 
 const randomUniform = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const tick = () => {
+const tick = (deltaTime = 0) => {
     const now = Date.now();
-    const deltaTime = now - lastTickTime;
+    // eslint-disable-next-line no-param-reassign
+    if (deltaTime === 0) deltaTime = now - lastTickTime;
     lastTickTime = now;
 
     timeToNextClient -= deltaTime;
-    if (timeToNextClient <= 0) {
+    if (timeToNextClient <= 0 && clients.length < params.maxClients) {
         clients.push(clientGenerator.create());
         timeToNextClient = randomUniform(params.minClientTta, params.maxClientTta);
     }
@@ -174,9 +236,6 @@ const tick = () => {
     threads.forEach((thread) => {
         // if Thread is Idle assign a file to it, remove file from the clients pool and sort files
         if (thread.fileSize === 0 && clients.length > 0) {
-            if (typeof (clients[0]) === 'undefined') {
-                const a = 5;
-            }
             thread.fileSize = clients[0].files[0].size;
             clients[0].files.shift();
             if (clients[0].files.length === 0) {
@@ -220,12 +279,42 @@ ipcMain.on('toggle', (event, data) => {
         initThreads(params.threadCount);
         initClients();
         startSimulation();
-        updateRenderer();
-    } else if (appState === 'running') {
+    } else if (appState === 'running' || appState === 'paused') {
         appState = 'init';
         stopSimulation();
-        updateRenderer();
     }
+    updateRenderer();
+});
+
+ipcMain.on('pause', () => {
+    if (appState !== 'paused') {
+        appState = 'paused';
+        clearInterval(tickIntervalHandle);
+    } else {
+        appState = 'running';
+        lastTickTime = Date.now();
+        tickIntervalHandle = setInterval(tick, params.tickTime);
+    }
+    updateRenderer();
+});
+
+ipcMain.on('step', () => {
+    tick(params.tickTime);
+});
+
+ipcMain.on('addSmallFile', () => {
+    clients.push(clientGenerator.createSmallFile());
+    updateRenderer();
+});
+
+ipcMain.on('addMediumFile', () => {
+    clients.push(clientGenerator.createMediumFile());
+    updateRenderer();
+});
+
+ipcMain.on('addLargeFile', () => {
+    clients.push(clientGenerator.createLargeFile());
+    updateRenderer();
 });
 
 ipcMain.on('update', () => {
@@ -234,9 +323,6 @@ ipcMain.on('update', () => {
 
 const run = () => {
     createWindow();
-    win.webContents.on('dom-ready', () => {
-        updateRenderer();
-    });
 };
 
 app.whenReady().then(run);

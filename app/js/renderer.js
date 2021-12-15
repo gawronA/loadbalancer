@@ -14,6 +14,26 @@ $('#mainBtn').on('click', () => {
     window.api.mainToggle(params);
 });
 
+$('#pauseBtn').on('click', () => {
+    window.api.pause();
+});
+
+$('#stepBtn').on('click', () => {
+    window.api.step();
+});
+
+$('#addSmallFileBtn').on('click', () => {
+    window.api.addSmallFile();
+});
+
+$('#addMediumFileBtn').on('click', () => {
+    window.api.addMediumFile();
+});
+
+$('#addLargeFileBtn').on('click', () => {
+    window.api.addLargeFile();
+});
+
 const convertFileSizeToStr = (sizeInBytes) => {
     if (sizeInBytes / 1e9 > 1) {
         return `${(sizeInBytes / 1e9).toFixed(1)} GB`;
@@ -43,7 +63,7 @@ const updateAppState = (state) => {
         $('#mainBtn').addClass('start');
         $('#mainBtn').removeClass('stop');
         $('#mainBtn').text('Start');
-    } else if (state === 'running') {
+    } else if (state === 'running' || state === 'paused') {
         $('#appInitContent').hide();
         $('#appRunningContent').show();
         $('#mainBtn').addClass('stop');

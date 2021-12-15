@@ -19,6 +19,7 @@
         "no-unused-vars": "warn",
         "no-trailing-spaces": "warn",
         "max-len": ["warn", 150],
-        "radix": 0
+        "radix": 0,
+        "no-plusplus": 0
     }
 }
